@@ -22,16 +22,60 @@ glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-// Реакция на движение курсора
-void cursor_callback(GLFWwindow* window, double x_pos, double y_pos)
-{
+// Переменные для нормализации отрисовки кадров
+GLfloat delta_time = 0.0f;
+GLfloat last_frame = 0.0f;
+GLfloat current_frame = 0.0f;
 
-}
+// Переменные для управления мышью
+GLfloat last_pos_x = 400;
+GLfloat last_pos_y = 300;
+GLfloat yaw = -90.0f;
+GLfloat pitch = 0.0f;
+// Флаг для устранения рывка мыши в момент запуска
+GLfloat first_cursor_call = true;
 
 // Состояние клавиш
 bool keys[1024];
 
-// Реакция на нажатия
+// Реакция на движение мыши
+void cursor_callback(GLFWwindow* window, double pos_x, double pos_y)
+{
+    if (first_cursor_call)
+    {
+        first_cursor_call = false;
+
+        last_pos_x = pos_x;
+        last_pos_y = pos_y;
+    }
+
+    // Чувствительность мыши
+    GLfloat sensitivity = 0.5f;
+    // Изменения в координатах
+    GLfloat movement_x = (pos_x - last_pos_x) * sensitivity;
+    GLfloat movement_y = (last_pos_y - pos_y) * sensitivity; // Оконные координаты возрастают сверху вниз
+
+    last_pos_x = pos_x;
+    last_pos_y = pos_y;
+
+    yaw += movement_x;
+    pitch += movement_y;
+
+    // Ограничения на "тангаж", чтоб по Y не было проблем с отрисовкой
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    // Теперь определяем конечный вектор направления камеры
+    glm::vec3 front;
+    front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+    front.y = sin(glm::radians(pitch));
+    front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+    camera_front = glm::normalize(front);
+}
+
+// Реакция на нажатия с клавиатуры
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
     // Фиксируем нажатия
@@ -51,10 +95,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 // Движение камеры
-void check_keys()
+void do_movement()
 {
     // Управление камерой
-    GLfloat camera_step = 0.05f;
+    GLfloat camera_step = 5.0f * delta_time;
     if (keys[GLFW_KEY_W])
     {
         camera_pos += camera_step * camera_front;
@@ -134,11 +178,11 @@ int main(void)
     // Задаем window рабочим окном
     glfwMakeContextCurrent(window);
 
-    // Указываем glfw, чтоб он фиксировал курсор мыши, но не отображал его
+    // Задаем в glfw фиксацию курсора, но без его отрисовки
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    // Передаем рукописную callback-функцию для мыши
+    // Передаем нашу рукописную callback-функцию для мыши
     glfwSetCursorPosCallback(window, cursor_callback);
+
     // Передаем нашу рукописную callback-функцию для клавиатуры
     glfwSetKeyCallback(window, key_callback);
 
@@ -260,10 +304,14 @@ int main(void)
 
     while (!glfwWindowShouldClose(window))
     {
-        shader.use();
+        // Определяем delta_time
+        current_frame = glfwGetTime();
+        delta_time = current_frame - last_frame;
+        last_frame = current_frame;
+
         glfwPollEvents();
         // Движение камеры
-        check_keys();
+        do_movement();
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         // Помимо очистки цветов изображения, будем очищать Z-буфер от значений предыдущего кадра
@@ -282,6 +330,7 @@ int main(void)
         glUniform1i(glGetUniformLocation(shader.program, "texture_two"), 1);
 
 
+        shader.use();
 
 
         glBindVertexArray(VAO);
