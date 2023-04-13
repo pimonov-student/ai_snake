@@ -1,3 +1,1 @@
-external/glad/* linguist-vendored
-external/glfw/* linguist-vendored
-external/glm/* linguist-vendored
+external/** linguist-vendored
