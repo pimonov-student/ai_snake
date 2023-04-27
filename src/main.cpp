@@ -17,9 +17,10 @@
 GLchar* v_shader_path;
 GLchar* f_shader_path;
 GLchar* grass_path;
+GLchar* bricks_path;
 
 // Переменные для камеры
-glm::vec3 camera_pos = glm::vec3(0.0f, 1.0f, 3.0f);
+glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 1.5f);
 glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -133,18 +134,22 @@ void work_on_paths(std::string wd)
 	std::string v_shader = wd + "\\src\\shader\\vertex_shader.vs";
 	std::string f_shader = wd + "\\src\\shader\\fragment_shader.fs";
 	std::string grass = wd + "\\src\\texture\\img\\grass.jpg";
+	std::string bricks = wd + "\\src\\texture\\img\\bricks.jpg";
 
 	char* v_tmp = v_shader.data();
 	char* f_tmp = f_shader.data();
 	char* grass_tmp = grass.data();
+	char* bricks_tmp = bricks.data();
 
 	v_shader_path = new char[v_shader.length() + 1];
 	f_shader_path = new char[f_shader.length() + 1];
 	grass_path = new char[grass.length() + 1];
+	bricks_path = new char[bricks.length() + 1];
 
 	strcpy(v_shader_path, v_tmp);
 	strcpy(f_shader_path, f_tmp);
 	strcpy(grass_path, grass_tmp);
+	strcpy(bricks_path, bricks_tmp);
 }
 
 int main()
@@ -201,40 +206,121 @@ int main()
 	Shader shader(v_shader_path, f_shader_path);
 
 
-	// Вершины (поля)
-	GLfloat vertices[] =
-	{
-		// Положение			Текстура	
+	// Вершины
+	GLfloat grass_vertices[] =
+	{	
 		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f,
-		-0.5f, 0.5f,  0.0f,		0.0f, 1.0f,
-		0.5f,  -0.5f, 0.0f,		1.0f, 0.0f,
-
 		-0.5f, 0.5f,  0.0f,		0.0f, 1.0f,
 		0.5f,  -0.5f, 0.0f,		1.0f, 0.0f,
 		0.5f,  0.5f,  0.0f,		1.0f, 1.0f
 	};
+	GLfloat bricks_vertices[] =
+	{
+		// Верхняя стенка
+		-0.55f, 0.5f,  0.1f,	0.0f,  0.0f,
+		-0.55f, 0.55f, 0.1f,	0.0f,  0.5f,
+		0.5f,   0.5f,  0.1f,	15.0f, 0.0f,
+		0.5f,   0.55f, 0.1f,	15.0f, 0.5f,
+		// Нижняя стенка
+		-0.55f, 0.5f,  -0.1f,	0.0f,  0.0f,
+		-0.55f, 0.55f, -0.1f,	0.0f,  0.5f,
+		0.5f,   0.5f,  -0.1f,	15.0f, 0.0f,
+		0.5f,   0.55f, -0.1f,	15.0f, 0.5f,
+		// Левая стенка
+		-0.55f, 0.55f, -0.1f,	0.0f, 0.0f,
+		-0.55f, 0.55f, 0.1f,	0.0f, 2.0f,
+		-0.55f, 0.5f,  -0.1f,	0.5f, 0.0f,
+		-0.55f, 0.5f,  0.1f,	0.5f, 2.0f,
+		// Правая стенка
+		0.5f,   0.5f,  -0.1f,	0.0f, 0.0f,
+		0.5f,   0.5f,  0.1f,	0.0f, 2.0f,
+		0.5f,   0.55f, -0.1f,	0.5f, 0.0f,
+		0.5f,   0.55f, 0.1f,	0.5f, 2.0f,
+		// Задняя стенка
+		0.5f,   0.55f, -0.1f,	0.0f,  0.0f,
+		0.5f,   0.55f, 0.1f,	0.0f,  2.0f,
+		-0.55f, 0.55f, -0.1f,	15.0f, 0.0f,
+		-0.55f, 0.55f, 0.1f,	15.0f, 2.0f,
+		// Передняя стенка
+		-0.55f, 0.5f,  -0.1f,	0.0f,  0.0f,
+		-0.55f, 0.5f,  0.1f,	0.0f,  2.0f,
+		0.5f,   0.5f,  -0.1f,	15.0f, 0.0f,
+		0.5f,   0.5f,  0.1f,	15.0f, 2.0f
+	};
+	// Индексы
+	GLuint grass_indices[] =
+	{
+		0, 1, 2,
+		1, 2, 3
+	};
+	GLuint bricks_indices[] =
+	{
+		// Верхняя стенка
+		0, 1, 2,
+		1, 2, 3,
+		// Нижняя стенка
+		4, 5, 6,
+		5, 6, 7,
+		// Левая стенка
+		8, 9, 10,
+		9, 10, 11,
+		// Правая стенка
+		12, 13, 14,
+		13, 14, 15,
+		// Задняя стенка
+		16, 17, 18,
+		17, 18, 19,
+		// Передняя стенка
+		20, 21, 22,
+		21, 22, 23
+	};
 	// -------- СЮДА ВЕКТОРЫ ДЛЯ РАСПОЛОЖЕНИЯ ОБЪЕКТОВ --------
-	glm::vec3 smth_coords[] = { glm::vec3(0, 0, 0) };
+	glm::vec3 smth_coords[] =
+	{
+		glm::vec3(0.0f, 0.0f, 0.0f)
+	};
 
 
-	// I
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	// Трава
+	GLuint grass_VAO;
+	glGenVertexArrays(1, &grass_VAO);
+	glBindVertexArray(grass_VAO);
 
-	// II
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	GLuint grass_VBO;
+	glGenBuffers(1, &grass_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, grass_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(grass_vertices), grass_vertices, GL_STATIC_DRAW);
 
-	// III
+	GLuint grass_EBO;
+	glGenBuffers(1, &grass_EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, grass_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(grass_indices), grass_indices, GL_STATIC_DRAW);
+
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
 
-	// IV
+	// Кирпичи
+	GLuint bricks_VAO;
+	glGenVertexArrays(1, &bricks_VAO);
+	glBindVertexArray(bricks_VAO);
+
+	GLuint bricks_VBO;
+	glGenBuffers(1, &bricks_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, bricks_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(bricks_vertices), bricks_vertices, GL_STATIC_DRAW);
+
+	GLuint bricks_EBO;
+	glGenBuffers(1, &bricks_EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bricks_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(bricks_indices), bricks_indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
 	glBindVertexArray(0);
 
 
@@ -242,6 +328,7 @@ int main()
 	stbi_set_flip_vertically_on_load(true);
 	// Создаем объекты текстур
 	Texture grass(grass_path);
+	Texture bricks(bricks_path);
 
 
 	// Режим отрисовки
@@ -269,20 +356,16 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		// Сделаем активным текстурный блок 0 и закрепим за ним текстуру травы
+		// Забиваем текстурами
 		glActiveTexture(GL_TEXTURE0);
-		// Привязываем текстуру, чтобы переписанный фрагментный шейдер ее обнаружил (в нем мы указали ее как uniform)
 		glBindTexture(GL_TEXTURE_2D, grass.texture);
-		// Определяем uniform переменную
-		glUniform1i(glGetUniformLocation(shader.program, "our_texture"), 0);
-
-		shader.use();
-
-		glBindVertexArray(VAO);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, bricks.texture);
 
 		// Матрицы
 		glm::mat4 model(1.0f);
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 0.1f, 0.0f));
+		model = glm::rotate(model, glm::radians(-40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		// По сути матрица view есть матрица "вида из камеры", зададим ее через функцию glm::lookAt
 		glm::mat4 view(1.0f);
 		// Первый аргумент - вектор на камеру, второй - вектор на точку, куда камера смотрит, третий - вспомогательный вектор для создания системы координат
@@ -298,7 +381,21 @@ int main()
 		GLint projection_loc = glGetUniformLocation(shader.program, "projection");
 		glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
 
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		shader.use();
+
+		glBindVertexArray(grass_VAO);
+
+		// Определяем uniform переменную
+		glUniform1i(glGetUniformLocation(shader.program, "our_texture"), 0);
+
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		glBindVertexArray(bricks_VAO);
+
+		// Определяем uniform переменную
+		glUniform1i(glGetUniformLocation(shader.program, "our_texture"), 1);
+
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 		// Отвязываем все
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -309,8 +406,8 @@ int main()
 	}
 
 	// Очищаем выделенную под эти объекты память
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1, &grass_VAO);
+	glDeleteBuffers(1, &grass_VBO);
 	// После завершения цикла, закрывая окно
 	glfwTerminate();
 
