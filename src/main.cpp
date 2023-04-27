@@ -214,70 +214,11 @@ int main()
 		0.5f,  -0.5f, 0.0f,		1.0f, 0.0f,
 		0.5f,  0.5f,  0.0f,		1.0f, 1.0f
 	};
-	GLfloat bricks_vertices[] =
-	{
-		// Верхняя стенка
-		-0.55f, 0.5f,  0.1f,	0.0f,  0.0f,
-		-0.55f, 0.55f, 0.1f,	0.0f,  0.5f,
-		0.5f,   0.5f,  0.1f,	15.0f, 0.0f,
-		0.5f,   0.55f, 0.1f,	15.0f, 0.5f,
-		// Нижняя стенка
-		-0.55f, 0.5f,  -0.1f,	0.0f,  0.0f,
-		-0.55f, 0.55f, -0.1f,	0.0f,  0.5f,
-		0.5f,   0.5f,  -0.1f,	15.0f, 0.0f,
-		0.5f,   0.55f, -0.1f,	15.0f, 0.5f,
-		// Левая стенка
-		-0.55f, 0.55f, -0.1f,	0.0f, 0.0f,
-		-0.55f, 0.55f, 0.1f,	0.0f, 2.0f,
-		-0.55f, 0.5f,  -0.1f,	0.5f, 0.0f,
-		-0.55f, 0.5f,  0.1f,	0.5f, 2.0f,
-		// Правая стенка
-		0.5f,   0.5f,  -0.1f,	0.0f, 0.0f,
-		0.5f,   0.5f,  0.1f,	0.0f, 2.0f,
-		0.5f,   0.55f, -0.1f,	0.5f, 0.0f,
-		0.5f,   0.55f, 0.1f,	0.5f, 2.0f,
-		// Задняя стенка
-		0.5f,   0.55f, -0.1f,	0.0f,  0.0f,
-		0.5f,   0.55f, 0.1f,	0.0f,  2.0f,
-		-0.55f, 0.55f, -0.1f,	15.0f, 0.0f,
-		-0.55f, 0.55f, 0.1f,	15.0f, 2.0f,
-		// Передняя стенка
-		-0.55f, 0.5f,  -0.1f,	0.0f,  0.0f,
-		-0.55f, 0.5f,  0.1f,	0.0f,  2.0f,
-		0.5f,   0.5f,  -0.1f,	15.0f, 0.0f,
-		0.5f,   0.5f,  0.1f,	15.0f, 2.0f
-	};
 	// Индексы
 	GLuint grass_indices[] =
 	{
 		0, 1, 2,
 		1, 2, 3
-	};
-	GLuint bricks_indices[] =
-	{
-		// Верхняя стенка
-		0, 1, 2,
-		1, 2, 3,
-		// Нижняя стенка
-		4, 5, 6,
-		5, 6, 7,
-		// Левая стенка
-		8, 9, 10,
-		9, 10, 11,
-		// Правая стенка
-		12, 13, 14,
-		13, 14, 15,
-		// Задняя стенка
-		16, 17, 18,
-		17, 18, 19,
-		// Передняя стенка
-		20, 21, 22,
-		21, 22, 23
-	};
-	// -------- СЮДА ВЕКТОРЫ ДЛЯ РАСПОЛОЖЕНИЯ ОБЪЕКТОВ --------
-	glm::vec3 smth_coords[] =
-	{
-		glm::vec3(0.0f, 0.0f, 0.0f)
 	};
 
 
@@ -300,28 +241,6 @@ int main()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
-
-	// Кирпичи
-	GLuint bricks_VAO;
-	glGenVertexArrays(1, &bricks_VAO);
-	glBindVertexArray(bricks_VAO);
-
-	GLuint bricks_VBO;
-	glGenBuffers(1, &bricks_VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, bricks_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(bricks_vertices), bricks_vertices, GL_STATIC_DRAW);
-
-	GLuint bricks_EBO;
-	glGenBuffers(1, &bricks_EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bricks_EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(bricks_indices), bricks_indices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
-
-	glBindVertexArray(0);
 
 
 	// Флаг для корректной загрузки изображений через stb_image
@@ -362,6 +281,7 @@ int main()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, bricks.texture);
 
+
 		// Матрицы
 		glm::mat4 model(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.1f, 0.0f));
@@ -381,21 +301,13 @@ int main()
 		GLint projection_loc = glGetUniformLocation(shader.program, "projection");
 		glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
 
+
 		shader.use();
 
+
 		glBindVertexArray(grass_VAO);
-
-		// Определяем uniform переменную
 		glUniform1i(glGetUniformLocation(shader.program, "our_texture"), 0);
-
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		glBindVertexArray(bricks_VAO);
-
-		// Определяем uniform переменную
-		glUniform1i(glGetUniformLocation(shader.program, "our_texture"), 1);
-
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 		// Отвязываем все
 		glBindTexture(GL_TEXTURE_2D, 0);
