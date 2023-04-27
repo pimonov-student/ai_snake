@@ -13,9 +13,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "texture/stb_image.h"
 
+// Размеры окна
+int w_width, w_height;
+
 // Пути к нужным файлам
-GLchar* v_shader_path;
-GLchar* f_shader_path;
+GLchar* field_v_shader_path;
+GLchar* field_f_shader_path;
+GLchar* snake_v_shader_path;
+GLchar* snake_f_shader_path;
 GLchar* grass_path;
 GLchar* bricks_path;
 
@@ -39,6 +44,10 @@ GLfloat current_frame = 0.0f;
 
 // Состояние клавиш
 bool keys[1024];
+
+// Переменные для движения головы змейки
+GLfloat step = 0.0625f;
+GLfloat pos = -0.46875f;
 
 // Реакция на движение мыши
 void cursor_callback(GLFWwindow* window, double pos_x, double pos_y)
@@ -101,7 +110,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void do_movement()
 {
 	// Управление камерой
-	GLfloat camera_step = 2.0f * delta_time;
+	GLfloat camera_step = 0.5f * delta_time;
 	if (keys[GLFW_KEY_W])
 	{
 		camera_pos += camera_step * camera_front;
@@ -131,25 +140,101 @@ void do_movement()
 // Функция подготавливает пути к необходимым файлам
 void work_on_paths(std::string wd)
 {
-	std::string v_shader = wd + "\\src\\shader\\vertex_shader.vs";
-	std::string f_shader = wd + "\\src\\shader\\fragment_shader.fs";
+	std::string field_v_shader = wd + "\\src\\shader\\field_v_shader.vs";
+	std::string field_f_shader = wd + "\\src\\shader\\field_f_shader.fs";
+	std::string snake_v_shader = wd + "\\src\\shader\\snake_v_shader.vs";
+	std::string snake_f_shader = wd + "\\src\\shader\\snake_f_shader.fs";
 	std::string grass = wd + "\\src\\texture\\img\\grass.jpg";
 	std::string bricks = wd + "\\src\\texture\\img\\bricks.jpg";
 
-	char* v_tmp = v_shader.data();
-	char* f_tmp = f_shader.data();
+	char* field_v_tmp = field_v_shader.data();
+	char* field_f_tmp = field_f_shader.data();
+	char* snake_v_tmp = snake_v_shader.data();
+	char* snake_f_tmp = snake_f_shader.data();
 	char* grass_tmp = grass.data();
 	char* bricks_tmp = bricks.data();
 
-	v_shader_path = new char[v_shader.length() + 1];
-	f_shader_path = new char[f_shader.length() + 1];
+	field_v_shader_path = new char[field_v_shader.length() + 1];
+	field_f_shader_path = new char[field_f_shader.length() + 1];
+	snake_v_shader_path = new char[snake_v_shader.length() + 1];
+	snake_f_shader_path = new char[snake_f_shader.length() + 1];
 	grass_path = new char[grass.length() + 1];
 	bricks_path = new char[bricks.length() + 1];
 
-	strcpy(v_shader_path, v_tmp);
-	strcpy(f_shader_path, f_tmp);
+	strcpy(field_v_shader_path, field_v_tmp);
+	strcpy(field_f_shader_path, field_f_tmp);
+	strcpy(snake_v_shader_path, snake_v_tmp);
+	strcpy(snake_f_shader_path, snake_f_tmp);
 	strcpy(grass_path, grass_tmp);
 	strcpy(bricks_path, bricks_tmp);
+}
+
+void render(GLFWwindow* window,
+			GLuint grass_VAO, GLuint snake_VAO, 
+			Shader* field_shader, Shader* snake_shader, 
+			Texture* grass, Texture* bricks)
+{
+	// Заливка фона
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	// Очищаем буфер цвета и Z-буфер
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+	// Забиваем текстурами
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, grass->texture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, bricks->texture);
+
+
+	// Отрисовка поля
+	field_shader->use();
+
+	glm::mat4 model(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+	glm::mat4 view(1.0f);
+	view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
+	glm::mat4 projection(1.0f);
+	projection = glm::perspective(glm::radians(50.0f), (GLfloat)w_width / (GLfloat)w_height, 0.1f, 300.0f);
+
+	GLint model_loc = glGetUniformLocation(field_shader->program, "model");
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
+	GLint view_loc = glGetUniformLocation(field_shader->program, "view");
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
+	GLint projection_loc = glGetUniformLocation(field_shader->program, "projection");
+	glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
+
+	glBindVertexArray(grass_VAO);
+	glUniform1i(glGetUniformLocation(field_shader->program, "our_texture"), 0);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+	// Отрисовка змейки
+	snake_shader->use();
+
+	glm::mat4 s_model(1.0f);
+	s_model = glm::translate(s_model, glm::vec3(pos, 0.03125f, 0.031251f));
+	s_model = glm::scale(s_model, glm::vec3(0.0625f));
+
+	GLint s_model_loc = glGetUniformLocation(snake_shader->program, "model");
+	glUniformMatrix4fv(s_model_loc, 1, GL_FALSE, glm::value_ptr(s_model));
+	GLint s_view_loc = glGetUniformLocation(snake_shader->program, "view");
+	glUniformMatrix4fv(s_view_loc, 1, GL_FALSE, glm::value_ptr(view));
+	GLint s_projection_loc = glGetUniformLocation(snake_shader->program, "projection");
+	glUniformMatrix4fv(s_projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
+
+	glBindVertexArray(snake_VAO);
+	glUniform1i(glGetUniformLocation(snake_shader->program, "our_texture"), 1);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+	// Отвязываем все
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindVertexArray(0);
+
+	pos += step;
+	if (pos > 0.5f) pos = -0.46875;
+
+	glfwSwapBuffers(window);
 }
 
 int main()
@@ -197,13 +282,13 @@ int main()
 
 
 	// Передаем OpenGL размер window
-	int w_width, w_height;
 	glfwGetFramebufferSize(window, &w_width, &w_height);
 	glViewport(0, 0, w_width, w_height);
 
 
-	// Собираем шейдерную программу
-	Shader shader(v_shader_path, f_shader_path);
+	// Собираем шейдерные программы
+	Shader field_shader(field_v_shader_path, field_f_shader_path);
+	Shader snake_shader(snake_v_shader_path, snake_f_shader_path);
 
 
 	// Вершины
@@ -214,11 +299,59 @@ int main()
 		0.5f,  -0.5f, 0.0f,		1.0f, 0.0f,
 		0.5f,  0.5f,  0.0f,		1.0f, 1.0f
 	};
+	GLfloat snake_vertices[] =
+	{
+		// Верхняя стенка
+		-0.5f, 0.5f, 0.5f,		0.0f, 0.0f,
+		-0.5f, 0.5f, -0.5f,		0.0f, 1.0f,
+		0.5f,  0.5f, 0.5f,		1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,		1.0f, 1.0f,
+		// Нижняя стенка
+		-0.5f, -0.5f, 0.5f,		0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,	0.0f, 1.0f,
+		0.5f,  -0.5f, 0.5f,		1.0f, 0.0f,
+		0.5f,  -0.5f, -0.5f,	1.0f, 1.0f,
+		// Левая стенка
+		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,
+		-0.5f, 0.5f,  -0.5f,	0.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f,		1.0f, 0.0f,
+		-0.5f, 0.5f,  0.5f,		1.0f, 1.0f,
+		// Правая стенка
+		0.5f, -0.5f, 0.5f,		0.0f, 0.0f,
+		0.5f, 0.5f,  0.5f,		0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,		1.0f, 0.0f,
+		0.5f, 0.5f,  -0.5f,		1.0f, 1.0f,
+		// Задняя стенка
+		0.5f,  -0.5f, -0.5f,	0.0f, 0.0f,
+		0.5f,  0.5f,  -0.5f,	0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,	1.0f, 0.0f,
+		-0.5f, 0.5f,  -0.5f,	1.0f, 1.0f,
+		// Передняя стенка
+		-0.5f, -0.5f, 0.5f,		0.0f, 0.0f,
+		-0.5f, 0.5f, 0.5f,		0.0f, 1.0f,
+		0.5f,  -0.5f, 0.5f,		1.0f, 0.0f,
+		0.5f,  0.5f, 0.5f,		1.0f, 1.0f
+	};
 	// Индексы
 	GLuint grass_indices[] =
 	{
 		0, 1, 2,
 		1, 2, 3
+	};
+	GLuint snake_indices[] =
+	{
+		0, 1, 2,
+		1, 2, 3,
+		4, 5, 6,
+		5, 6, 7,
+		8, 9, 10,
+		9, 10, 11,
+		12, 13, 14,
+		13, 14, 15,
+		16, 17, 18,
+		17, 18, 19,
+		20, 21, 22,
+		21, 22, 23
 	};
 
 
@@ -242,6 +375,27 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
 
+	// Змея (одна секция)
+	GLuint snake_VAO;
+	glGenVertexArrays(1, &snake_VAO);
+	glBindVertexArray(snake_VAO);
+
+	GLuint snake_VBO;
+	glGenBuffers(1, &snake_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, snake_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(snake_vertices), snake_vertices, GL_STATIC_DRAW);
+
+	GLuint snake_EBO;
+	glGenBuffers(1, &snake_EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, snake_EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(snake_indices), snake_indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(0);
 
 	// Флаг для корректной загрузки изображений через stb_image
 	stbi_set_flip_vertically_on_load(true);
@@ -255,6 +409,9 @@ int main()
 	// Проверка Z-буфера для корректного наложения объектов друг на друга
 	glEnable(GL_DEPTH_TEST);
 
+	int frames_per_sec = 30;
+	double current_time = 0;
+	double last_time = 0;
 
 	// Основной цикл отрисовки
 	while (!glfwWindowShouldClose(window))
@@ -269,52 +426,13 @@ int main()
 		// Движение камеры
 		do_movement();
 
-		// Заливка фона
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		// Очищаем буфер цвета и Z-буфер
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-		// Забиваем текстурами
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, grass.texture);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, bricks.texture);
-
-
-		// Матрицы
-		glm::mat4 model(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.1f, 0.0f));
-		model = glm::rotate(model, glm::radians(-40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		// По сути матрица view есть матрица "вида из камеры", зададим ее через функцию glm::lookAt
-		glm::mat4 view(1.0f);
-		// Первый аргумент - вектор на камеру, второй - вектор на точку, куда камера смотрит, третий - вспомогательный вектор для создания системы координат
-		view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
-		glm::mat4 projection(1.0f);
-		projection = glm::perspective(glm::radians(50.0f), (GLfloat)w_width / (GLfloat)w_height, 0.1f, 300.0f);
-
-		// Определяем наши матрицы как uniform переменные для вершинного шейдера
-		GLint model_loc = glGetUniformLocation(shader.program, "model");
-		glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
-		GLint view_loc = glGetUniformLocation(shader.program, "view");
-		glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
-		GLint projection_loc = glGetUniformLocation(shader.program, "projection");
-		glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
-
-
-		shader.use();
-
-
-		glBindVertexArray(grass_VAO);
-		glUniform1i(glGetUniformLocation(shader.program, "our_texture"), 0);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		// Отвязываем все
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glBindVertexArray(0);
-
-
-		glfwSwapBuffers(window);
+		// Отрисовка
+		current_time = glfwGetTime();
+		if (current_time - last_time >= 1.0 / frames_per_sec)
+		{
+			last_time = current_time;
+			render(window, grass_VAO, snake_VAO, &field_shader, &snake_shader, &grass, &bricks);
+		}
 	}
 
 	// Очищаем выделенную под эти объекты память
