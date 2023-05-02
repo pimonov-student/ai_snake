@@ -46,8 +46,14 @@ GLfloat current_frame = 0.0f;
 bool keys[1024];
 
 // Переменные для движения головы змейки
+struct Position
+{
+	GLfloat x = 0.0f;
+	GLfloat y = 0.0f;
+};
+Position pos;
+GLchar direction = 'r';
 GLfloat step = 0.0625f;
-GLfloat pos = -0.46875f;
 
 // Реакция на движение мыши
 void cursor_callback(GLFWwindow* window, double pos_x, double pos_y)
@@ -107,7 +113,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 // Движение камеры
-void do_movement()
+void key_processing()
 {
 	// Управление камерой
 	GLfloat camera_step = 0.5f * delta_time;
@@ -134,6 +140,24 @@ void do_movement()
 	if (keys[GLFW_KEY_E])
 	{
 		camera_pos -= camera_step * camera_up;
+	}
+
+	// Управление змейкой
+	if (keys[GLFW_KEY_UP] && direction != 'd')
+	{
+		direction = 'u';
+	}
+	if (keys[GLFW_KEY_DOWN] && direction != 'u')
+	{
+		direction = 'd';
+	}
+	if (keys[GLFW_KEY_RIGHT] && direction != 'l')
+	{
+		direction = 'r';
+	}
+	if (keys[GLFW_KEY_LEFT] && direction != 'r')
+	{
+		direction = 'l';
 	}
 }
 
@@ -167,6 +191,26 @@ void work_on_paths(std::string wd)
 	strcpy(snake_f_shader_path, snake_f_tmp);
 	strcpy(grass_path, grass_tmp);
 	strcpy(bricks_path, bricks_tmp);
+}
+
+// Управление змейкой
+glm::mat4 snake_control(glm::mat4 model)
+{
+	// Направления: r - right, l - left, u - up, d - down
+	pos.x += (direction == 'r' ? step : (direction == 'l' ? -step : 0));
+	pos.y += (direction == 'u' ? step : (direction == 'd' ? -step : 0));
+
+	if ((std::abs(float(pos.x))) > 0.5)
+	{
+		pos.x += pos.x > 0 ? -0.5 : 0.5;
+	}
+	if ((std::abs(float(pos.y))) > 0.5)
+	{
+		pos.y += pos.y > 0 ? -0.5 : 0.5;
+	}
+
+	model = glm::translate(model, glm::vec3(pos.x, pos.y, 0.031251f));
+	return model;
 }
 
 void render(GLFWwindow* window,
@@ -213,7 +257,7 @@ void render(GLFWwindow* window,
 	snake_shader->use();
 
 	glm::mat4 s_model(1.0f);
-	s_model = glm::translate(s_model, glm::vec3(pos, 0.03125f, 0.031251f));
+	s_model = snake_control(s_model);
 	s_model = glm::scale(s_model, glm::vec3(0.0625f));
 
 	GLint s_model_loc = glGetUniformLocation(snake_shader->program, "model");
@@ -231,8 +275,6 @@ void render(GLFWwindow* window,
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);
 
-	pos += step;
-	if (pos > 0.5f) pos = -0.46875;
 
 	glfwSwapBuffers(window);
 }
@@ -409,7 +451,7 @@ int main()
 	// Проверка Z-буфера для корректного наложения объектов друг на друга
 	glEnable(GL_DEPTH_TEST);
 
-	int frames_per_sec = 30;
+	int frames_per_sec = 5;
 	double current_time = 0;
 	double last_time = 0;
 
@@ -424,7 +466,7 @@ int main()
 		// Обрабатываем события
 		glfwPollEvents();
 		// Движение камеры
-		do_movement();
+		key_processing();
 
 		// Отрисовка
 		current_time = glfwGetTime();
