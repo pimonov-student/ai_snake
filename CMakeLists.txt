@@ -6,6 +6,10 @@ project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME} 
 	src/main.cpp
+	src/render.cpp
+	src/render.h
+	src/snake.cpp
+	src/snake.h
 	src/shader/shader.cpp
 	src/shader/shader.h
 	src/texture/texture.cpp
