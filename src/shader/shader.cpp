@@ -1,5 +1,7 @@
 #include "shader.h"
 
+Shader::Shader() = default;
+
 Shader::Shader(const GLchar* vertex_path, const GLchar* fragment_path)
 {
 	// Исходники шейдеров

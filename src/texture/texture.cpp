@@ -1,5 +1,7 @@
 #include "texture.h"
 
+Texture::Texture() = default;
+
 Texture::Texture(GLchar* texture_path)
 {
 	// Загружаем изображение

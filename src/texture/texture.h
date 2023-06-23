@@ -13,7 +13,9 @@ public:
 	GLuint texture;
 	// Переменные размера и цветовых каналов
 	int width, height, n_channels;
-	// Конструктор
+	// Пустой конструктор
+	Texture();
+	// Конструктор с путем
 	Texture(GLchar* texture_path);
 	// Деструктор
 	~Texture();

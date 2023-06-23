@@ -15,6 +15,8 @@ class Shader
 public:
 	// Идентификатор программы (?)
 	GLuint program;
+	// "Пустой" конструктор
+	Shader();
 	// Конструктор, считывающий и собирающий шейдеры (вершинный и фрагментный)
 	Shader(const GLchar* vertex_path, const GLchar* fragment_path);
 	// Деструктор
