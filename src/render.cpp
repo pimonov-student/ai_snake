@@ -9,7 +9,7 @@ Render::Render()
 	last_frame = 0.0f;
 	current_frame = 0.0f;
 
-	frames_per_sec = 5;
+	frames_per_sec = 30;
 	current_time = 0;
 	last_time = 0;
 
@@ -34,7 +34,8 @@ void Render::work_on_path(GLchar** path, std::string input_path)
 }
 
 void Render::init_object(GLuint* VAO, GLuint* VBO, GLuint* EBO,
-						 GLfloat* vertices, GLuint* indices)
+						 GLfloat* vertices, GLuint* indices,
+						 int vertices_sizeof, int indices_sizeof)
 {
 	// Работа с VAO
 	glGenVertexArrays(1, VAO);
@@ -43,12 +44,12 @@ void Render::init_object(GLuint* VAO, GLuint* VBO, GLuint* EBO,
 	// Работа с VBO
 	glGenBuffers(1, VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices_sizeof, vertices, GL_STATIC_DRAW);
 
 	// Работа с EBO
 	glGenBuffers(1, EBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_sizeof, indices, GL_STATIC_DRAW);
 
 	// Атрибуты
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
@@ -139,7 +140,7 @@ void Render::draw(Snake* snake)
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	glm::mat4 view(1.0f);
-	view = glm::lookAt(control.camera_front,
+	view = glm::lookAt(control.camera_pos,
 					   control.camera_pos + control.camera_front,
 					   control.camera_up);
 	glm::mat4 projection(1.0f);
@@ -226,9 +227,9 @@ int Render::init(void (*cursor_callback)(GLFWwindow*, double, double),
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Передаем нашу рукописную callback-функцию для мыши
-	glfwSetCursorPosCallback(window, *cursor_callback);
+	glfwSetCursorPosCallback(window, cursor_callback);
 	// Передаем нашу callback функцию для клавиатуры
-	glfwSetKeyCallback(window, *key_callback);
+	glfwSetKeyCallback(window, key_callback);
 
 	// Загружаем GLAD (OpenGL) и проверяем загрузку
 	if (!gladLoadGL())
@@ -311,9 +312,13 @@ int Render::init(void (*cursor_callback)(GLFWwindow*, double, double),
 	};
 
 	// Трава
-	init_object(&grass_VAO, &grass_VBO, &grass_EBO, grass_vertices, grass_indices);
+	init_object(&grass_VAO, &grass_VBO, &grass_EBO,
+				grass_vertices, grass_indices,
+				sizeof(grass_vertices), sizeof(grass_indices));
 	// Змея
-	init_object(&snake_VAO, &snake_VBO, &snake_EBO, snake_vertices, snake_indices);
+	init_object(&snake_VAO, &snake_VBO, &snake_EBO,
+				snake_vertices, snake_indices,
+				sizeof(snake_vertices), sizeof(snake_indices));
 
 
 	// Флаг для корректной загрузки изображений через stb_image
@@ -355,4 +360,80 @@ int Render::init(void (*cursor_callback)(GLFWwindow*, double, double),
 	free_all();
 	// После завершения цикла, закрывая окно
 	glfwTerminate();
+}
+
+
+glm::vec3 Render::get_camera_pos()
+{
+	return control.camera_pos;
+}
+glm::vec3 Render::get_camera_front()
+{
+	return control.camera_front;
+}
+glm::vec3 Render::get_camera_up()
+{
+	return control.camera_up;
+}
+GLfloat Render::get_last_pos_x()
+{
+	return control.last_pos_x;
+}
+GLfloat Render::get_last_pos_y()
+{
+	return control.last_pos_y;
+}
+GLfloat Render::get_yaw()
+{
+	return control.yaw;
+}
+GLfloat Render::get_pitch()
+{
+	return control.pitch;
+}
+GLfloat Render::get_first_cursor_call()
+{
+	return control.first_cursor_call;
+}
+bool Render::get_key(int id)
+{
+	return control.keys[id];
+}
+
+
+void Render::set_camera_pos(glm::vec3 new_value)
+{
+	control.camera_pos = new_value;
+}
+void Render::set_camera_front(glm::vec3 new_value)
+{
+	control.camera_front = new_value;
+}
+void Render::set_camera_up(glm::vec3 new_value)
+{
+	control.camera_up = new_value;
+}
+void Render::set_last_pos_x(GLfloat new_value)
+{
+	control.last_pos_x = new_value;
+}
+void Render::set_last_pos_y(GLfloat new_value)
+{
+	control.last_pos_y = new_value;
+}
+void Render::set_yaw(GLfloat new_value)
+{
+	control.yaw = new_value;
+}
+void Render::set_pitch(GLfloat new_value)
+{
+	control.pitch = new_value;
+}
+void Render::set_first_cursor_call(GLfloat new_value)
+{
+	control.first_cursor_call = new_value;
+}
+void Render::set_key(int id, bool new_value)
+{
+	control.keys[id] = new_value;;
 }

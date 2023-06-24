@@ -52,6 +52,9 @@ private:
 	double current_time;
 	double last_time;
 
+	// Управление
+	Control control;
+
 	// Пути
 	std::string working_directory;
 	GLchar* field_v_shader_path;
@@ -79,15 +82,13 @@ private:
 	GLuint snake_EBO;
 	GLuint grass_EBO;
 public:
-	// Управление
-	Control control;
-
 	Render();
 	// Работа с путем к объекту
 	void work_on_path(GLchar** path, std::string input_path);
 	// Работа с объектами OpenGL
 	void init_object(GLuint* VAO, GLuint* VBO, GLuint* EBO,
-					 GLfloat* vertices, GLuint* indices);
+					 GLfloat* vertices, GLuint* indices,
+					 int vertices_sizeof, int indices_sizeof);
 	// Очистка всего выделяемого
 	void free_all();
 	// Обработка нажатий
@@ -98,6 +99,26 @@ public:
 	int init(void (*cursor_callback)(GLFWwindow*, double, double),
 			 void (*key_callback)(GLFWwindow*, int, int, int, int),
 			 Snake* snake);
+	// get'ы
+	glm::vec3 get_camera_pos();
+	glm::vec3 get_camera_front();
+	glm::vec3 get_camera_up();
+	GLfloat get_last_pos_x();
+	GLfloat get_last_pos_y();
+	GLfloat get_yaw();
+	GLfloat get_pitch();
+	GLfloat get_first_cursor_call();
+	bool get_key(int id);
+	// set'ы
+	void set_camera_pos(glm::vec3 new_value);
+	void set_camera_front(glm::vec3 new_value);
+	void set_camera_up(glm::vec3 new_value);
+	void set_last_pos_x(GLfloat new_value);
+	void set_last_pos_y(GLfloat new_value);
+	void set_yaw(GLfloat new_value);
+	void set_pitch(GLfloat new_value);
+	void set_first_cursor_call(GLfloat new_value);
+	void set_key(int id, bool new_value);
 };
 
 #endif
