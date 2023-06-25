@@ -57,30 +57,29 @@ private:
 
 	// Пути
 	std::string working_directory;
-	GLchar* field_v_shader_path;
-	GLchar* field_f_shader_path;
-	GLchar* snake_v_shader_path;
-	GLchar* snake_f_shader_path;
-	GLchar* grass_path;
-	GLchar* bricks_path;
+	GLchar* vertex_shader_path;
+	GLchar* fragment_shader_path;
+	GLchar* field_texture_path;
+	GLchar* body_texture_path;
+	GLchar* food_texture_path;
 
-	// Шейдеры
-	Shader field_shader;
-	Shader snake_shader;
+	// Шейдер
+	Shader shader;
 
 	// Текстуры
-	Texture grass;
-	Texture bricks;
+	Texture field;
+	Texture body;
+	Texture food;
 
 	// VBO объекты
-	GLuint snake_VBO;
-	GLuint grass_VBO;
+	GLuint body_VBO;
+	GLuint field_VBO;
 	// VAO объекты
-	GLuint snake_VAO;
-	GLuint grass_VAO;
+	GLuint body_VAO;
+	GLuint field_VAO;
 	// EBO объекты
-	GLuint snake_EBO;
-	GLuint grass_EBO;
+	GLuint body_EBO;
+	GLuint field_EBO;
 public:
 	Render();
 	// Работа с путем к объекту
