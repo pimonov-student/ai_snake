@@ -3,59 +3,60 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-// Подключаем все, что надо для OpenGL
+// РџРѕРґРєР»СЋС‡Р°РµРј РІСЃРµ, С‡С‚Рѕ РЅР°РґРѕ РґР»СЏ OpenGL
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-// Прочие необходимые
+// РџСЂРѕС‡РёРµ РЅРµРѕР±С…РѕРґРёРјС‹Рµ
 #include <filesystem>
 #include <iostream>
+#include <string>
 #include "snake.h"
 #include "shader/shader.h"
 #include "texture/texture.h"
 
 struct Control
 {
-	// Переменные для камеры
+	// РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РєР°РјРµСЂС‹
 	glm::vec3 camera_pos;
 	glm::vec3 camera_front;
 	glm::vec3 camera_up;
-	// Переменные для управления мышью
+	// РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РјС‹С€СЊСЋ
 	GLfloat last_pos_x;
 	GLfloat last_pos_y;
 	GLfloat yaw;
 	GLfloat pitch;
-	// Флаг для устранения рывка мыши в момент запуска
+	// Р¤Р»Р°Рі РґР»СЏ СѓСЃС‚СЂР°РЅРµРЅРёСЏ СЂС‹РІРєР° РјС‹С€Рё РІ РјРѕРјРµРЅС‚ Р·Р°РїСѓСЃРєР°
 	GLfloat first_cursor_call;
-	// Состояние клавиш
+	// РЎРѕСЃС‚РѕСЏРЅРёРµ РєР»Р°РІРёС€
 	bool keys[1024];
 };
 
 class Render
 {
 private:
-	// Окно
+	// РћРєРЅРѕ
 	GLFWwindow* window;
-	// Размеры окна
+	// Р Р°Р·РјРµСЂС‹ РѕРєРЅР°
 	int window_width;
 	int window_height;
 
-	// Переменные для нормализации отрисовки кадров
+	// РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РЅРѕСЂРјР°Р»РёР·Р°С†РёРё РѕС‚СЂРёСЃРѕРІРєРё РєР°РґСЂРѕРІ
 	GLfloat delta_time;
 	GLfloat last_frame;
 	GLfloat current_frame;
 
-	// Переменные для контроля fps
+	// РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РєРѕРЅС‚СЂРѕР»СЏ fps
 	int frames_per_sec;
 	double current_time;
 	double last_time;
 
-	// Управление
+	// РЈРїСЂР°РІР»РµРЅРёРµ
 	Control control;
 
-	// Пути
+	// РџСѓС‚Рё
 	std::string working_directory;
 	GLchar* vertex_shader_path;
 	GLchar* fragment_shader_path;
@@ -63,42 +64,42 @@ private:
 	GLchar* body_texture_path;
 	GLchar* food_texture_path;
 
-	// Шейдер
+	// РЁРµР№РґРµСЂ
 	Shader shader;
 
-	// Текстуры
+	// РўРµРєСЃС‚СѓСЂС‹
 	Texture field;
 	Texture body;
 	Texture food;
 
-	// VBO объекты
+	// VBO РѕР±СЉРµРєС‚С‹
 	GLuint body_VBO;
 	GLuint field_VBO;
-	// VAO объекты
+	// VAO РѕР±СЉРµРєС‚С‹
 	GLuint body_VAO;
 	GLuint field_VAO;
-	// EBO объекты
+	// EBO РѕР±СЉРµРєС‚С‹
 	GLuint body_EBO;
 	GLuint field_EBO;
 public:
 	Render();
-	// Работа с путем к объекту
+	// Р Р°Р±РѕС‚Р° СЃ РїСѓС‚РµРј Рє РѕР±СЉРµРєС‚Сѓ
 	void work_on_path(GLchar** path, std::string input_path);
-	// Работа с объектами OpenGL
+	// Р Р°Р±РѕС‚Р° СЃ РѕР±СЉРµРєС‚Р°РјРё OpenGL
 	void init_object(GLuint* VAO, GLuint* VBO, GLuint* EBO,
 					 GLfloat* vertices, GLuint* indices,
 					 int vertices_sizeof, int indices_sizeof);
-	// Очистка всего выделяемого
+	// РћС‡РёСЃС‚РєР° РІСЃРµРіРѕ РІС‹РґРµР»СЏРµРјРѕРіРѕ
 	void free_all();
-	// Обработка нажатий
+	// РћР±СЂР°Р±РѕС‚РєР° РЅР°Р¶Р°С‚РёР№
 	void key_processing(Snake* snake);
-	// Отрисовка
+	// РћС‚СЂРёСЃРѕРІРєР°
 	void draw(Snake* snake);
-	// Инициализация
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
 	int init(void (*cursor_callback)(GLFWwindow*, double, double),
 			 void (*key_callback)(GLFWwindow*, int, int, int, int),
 			 Snake* snake);
-	// get'ы
+	// get'С‹
 	glm::vec3 get_camera_pos();
 	glm::vec3 get_camera_front();
 	glm::vec3 get_camera_up();
@@ -108,7 +109,7 @@ public:
 	GLfloat get_pitch();
 	GLfloat get_first_cursor_call();
 	bool get_key(int id);
-	// set'ы
+	// set'С‹
 	void set_camera_pos(glm::vec3 new_value);
 	void set_camera_front(glm::vec3 new_value);
 	void set_camera_up(glm::vec3 new_value);

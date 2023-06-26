@@ -17,7 +17,7 @@ Snake::Snake()
 	srand(time(NULL));
 
 	direction = 'r';
-	size = 16;
+	size = 64;
 	step = 1.0f / size;
 
 	default_pos.x = step / 2;
@@ -31,7 +31,7 @@ Snake::Snake()
 
 void Snake::game_cycle()
 {
-	// Передвигаем сегменты тела
+	// РџРµСЂРµРґРІРёРіР°РµРј СЃРµРіРјРµРЅС‚С‹ С‚РµР»Р°
 	for (int i = body_pos.size() - 1; i > -1; --i)
 	{
 		if (!i)
@@ -43,7 +43,7 @@ void Snake::game_cycle()
 			body_pos[i] = body_pos[i - 1];
 		}
 	}
-	// Если голова наткнулась на еду
+	// Р•СЃР»Рё РіРѕР»РѕРІР° РЅР°С‚РєРЅСѓР»Р°СЃСЊ РЅР° РµРґСѓ
 	if (head_pos.x == food_pos.x && head_pos.y == food_pos.y)
 	{
 		while (true)
@@ -75,17 +75,17 @@ void Snake::game_cycle()
 		body_pos.push_back(tail_pos);
 	}
 
-	// Направления: r - right, l - left, u - up, d - down
+	// РќР°РїСЂР°РІР»РµРЅРёСЏ: r - right, l - left, u - up, d - down
 	head_pos.x += (direction == 'r' ? step : (direction == 'l' ? -step : 0));
 	head_pos.y += (direction == 'u' ? step : (direction == 'd' ? -step : 0));
 
-	// Столкновение со стенами
+	// РЎС‚РѕР»РєРЅРѕРІРµРЅРёРµ СЃРѕ СЃС‚РµРЅР°РјРё
 	if ((std::abs(float(head_pos.x))) > 0.5 || (std::abs(float(head_pos.y))) > 0.5)
 	{
 		head_pos = default_pos;
 		body_pos.clear();
 	}
-	// Столкновение с телом
+	// РЎС‚РѕР»РєРЅРѕРІРµРЅРёРµ СЃ С‚РµР»РѕРј
 	for (int i = 0; i < body_pos.size(); ++i)
 	{
 		if (head_pos == body_pos[i])

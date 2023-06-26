@@ -4,28 +4,28 @@ Shader::Shader() = default;
 
 Shader::Shader(const GLchar* vertex_path, const GLchar* fragment_path)
 {
-	// Исходники шейдеров
+	// РСЃС…РѕРґРЅРёРєРё С€РµР№РґРµСЂРѕРІ
 	std::string vertex_code, fragment_code;
-	// Потоки для чтения из файлов
+	// РџРѕС‚РѕРєРё РґР»СЏ С‡С‚РµРЅРёСЏ РёР· С„Р°Р№Р»РѕРІ
 	std::ifstream vertex_file, fragment_file;
-	// Потоки для чтения из прочитанных из файлов строк
+	// РџРѕС‚РѕРєРё РґР»СЏ С‡С‚РµРЅРёСЏ РёР· РїСЂРѕС‡РёС‚Р°РЅРЅС‹С… РёР· С„Р°Р№Р»РѕРІ СЃС‚СЂРѕРє
 	std::stringstream vertex_stream, fragment_stream;
-	// Как понял, проверка возможности этих потоков кидать исключенимя
+	// РљР°Рє РїРѕРЅСЏР», РїСЂРѕРІРµСЂРєР° РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё СЌС‚РёС… РїРѕС‚РѕРєРѕРІ РєРёРґР°С‚СЊ РёСЃРєР»СЋС‡РµРЅРёРјСЏ
 	vertex_file.exceptions(std::ifstream::badbit);
 	fragment_file.exceptions(std::ifstream::badbit);
 
 	try
 	{
-		// Открываем файлы по их пути
+		// РћС‚РєСЂС‹РІР°РµРј С„Р°Р№Р»С‹ РїРѕ РёС… РїСѓС‚Рё
 		vertex_file.open(vertex_path);
 		fragment_file.open(fragment_path);
-		// Считываем из файлов в потоки
+		// РЎС‡РёС‚С‹РІР°РµРј РёР· С„Р°Р№Р»РѕРІ РІ РїРѕС‚РѕРєРё
 		vertex_stream << vertex_file.rdbuf();
 		fragment_stream << fragment_file.rdbuf();
-		// Закрываем файлы
+		// Р—Р°РєСЂС‹РІР°РµРј С„Р°Р№Р»С‹
 		vertex_file.close();
 		fragment_file.close();
-		// Преобразовываем потоки в строки
+		// РџСЂРµРѕР±СЂР°Р·РѕРІС‹РІР°РµРј РїРѕС‚РѕРєРё РІ СЃС‚СЂРѕРєРё
 		vertex_code = vertex_stream.str();
 		fragment_code = fragment_stream.str();
 	}
@@ -34,11 +34,11 @@ Shader::Shader(const GLchar* vertex_path, const GLchar* fragment_path)
 		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
 	}
 
-	// Переходим к работе с OpenGL
-	// Те же исходники, преобразовываем тип
+	// РџРµСЂРµС…РѕРґРёРј Рє СЂР°Р±РѕС‚Рµ СЃ OpenGL
+	// РўРµ Р¶Рµ РёСЃС…РѕРґРЅРёРєРё, РїСЂРµРѕР±СЂР°Р·РѕРІС‹РІР°РµРј С‚РёРї
 	const GLchar* gl_vertex_code = vertex_code.c_str();
 	const GLchar* gl_fragment_code = fragment_code.c_str();
-	// По сути все то же, что и в main было, то есть сборка, линковка, проверка всего этого
+	// РџРѕ СЃСѓС‚Рё РІСЃРµ С‚Рѕ Р¶Рµ, С‡С‚Рѕ Рё РІ main Р±С‹Р»Рѕ, С‚Рѕ РµСЃС‚СЊ СЃР±РѕСЂРєР°, Р»РёРЅРєРѕРІРєР°, РїСЂРѕРІРµСЂРєР° РІСЃРµРіРѕ СЌС‚РѕРіРѕ
 	GLuint vertex_shader, fragment_shader;
 
 	vertex_shader = glCreateShader(GL_VERTEX_SHADER);

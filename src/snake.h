@@ -3,19 +3,19 @@
 #ifndef SNAKE_H
 #define SNAKE_H
 
-// Подключаем все, что надо для OpenGL
+// РџРѕРґРєР»СЋС‡Р°РµРј РІСЃРµ, С‡С‚Рѕ РЅР°РґРѕ РґР»СЏ OpenGL
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// Прочие необходимые
+// РџСЂРѕС‡РёРµ РЅРµРѕР±С…РѕРґРёРјС‹Рµ
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
 
-// Структура под координаты
+// РЎС‚СЂСѓРєС‚СѓСЂР° РїРѕРґ РєРѕРѕСЂРґРёРЅР°С‚С‹
 struct Position
 {
 	GLfloat x;
@@ -26,37 +26,37 @@ struct Position
 class Snake
 {
 private:
-	// Начальная позиция
+	// РќР°С‡Р°Р»СЊРЅР°СЏ РїРѕР·РёС†РёСЏ
 	Position default_pos;
-	// Позиция головы змейки
+	// РџРѕР·РёС†РёСЏ РіРѕР»РѕРІС‹ Р·РјРµР№РєРё
 	Position head_pos;
-	// Позиция хвоста змейки
+	// РџРѕР·РёС†РёСЏ С…РІРѕСЃС‚Р° Р·РјРµР№РєРё
 	Position tail_pos;
-	// Позиция сегментов тела
+	// РџРѕР·РёС†РёСЏ СЃРµРіРјРµРЅС‚РѕРІ С‚РµР»Р°
 	std::vector <Position> body_pos;
-	// Позиция еды
+	// РџРѕР·РёС†РёСЏ РµРґС‹
 	Position food_pos;
-	// Направление головы змейки
+	// РќР°РїСЂР°РІР»РµРЅРёРµ РіРѕР»РѕРІС‹ Р·РјРµР№РєРё
 	GLchar direction;
-	// Степень двойки (размер сетки)
+	// РЎС‚РµРїРµРЅСЊ РґРІРѕР№РєРё (СЂР°Р·РјРµСЂ СЃРµС‚РєРё)
 	GLuint size;
-	// Шаг змейки
+	// РЁР°Рі Р·РјРµР№РєРё
 	GLfloat step;
-	// Матрицы для отрисовки
+	// РњР°С‚СЂРёС†С‹ РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё
 	glm::mat4 head_model;
 	glm::mat4 food_model;
 public:
 	Snake();
-	// Управление змейкой
+	// РЈРїСЂР°РІР»РµРЅРёРµ Р·РјРµР№РєРѕР№
 	void game_cycle();
-	// get'ы
+	// get'С‹
 	GLchar get_direction();
 	glm::mat4 get_head_model();
 	glm::mat4 get_food_model();
 	int get_body_pos_size();
 	Position get_body_pos(int id);
 	GLfloat get_step();
-	// set'ы
+	// set'С‹
 	void set_direction(char new_direction);
 };
 

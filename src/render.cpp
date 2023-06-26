@@ -2,8 +2,8 @@
 
 Render::Render()
 {
-	window_width = 1200;
-	window_height = 900;
+	window_width = 800;
+	window_height = 800;
 
 	delta_time = 0.0f;
 	last_frame = 0.0f;
@@ -37,21 +37,21 @@ void Render::init_object(GLuint* VAO, GLuint* VBO, GLuint* EBO,
 						 GLfloat* vertices, GLuint* indices,
 						 int vertices_sizeof, int indices_sizeof)
 {
-	// Работа с VAO
+	// Р Р°Р±РѕС‚Р° СЃ VAO
 	glGenVertexArrays(1, VAO);
 	glBindVertexArray(*VAO);
 
-	// Работа с VBO
+	// Р Р°Р±РѕС‚Р° СЃ VBO
 	glGenBuffers(1, VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, *VBO);
 	glBufferData(GL_ARRAY_BUFFER, vertices_sizeof, vertices, GL_STATIC_DRAW);
 
-	// Работа с EBO
+	// Р Р°Р±РѕС‚Р° СЃ EBO
 	glGenBuffers(1, EBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_sizeof, indices, GL_STATIC_DRAW);
 
-	// Атрибуты
+	// РђС‚СЂРёР±СѓС‚С‹
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
@@ -62,7 +62,7 @@ void Render::init_object(GLuint* VAO, GLuint* VBO, GLuint* EBO,
 
 void Render::free_all()
 {
-	// Очищаем выделенную под объекты память
+	// РћС‡РёС‰Р°РµРј РІС‹РґРµР»РµРЅРЅСѓСЋ РїРѕРґ РѕР±СЉРµРєС‚С‹ РїР°РјСЏС‚СЊ
 	glDeleteVertexArrays(1, &field_VAO);
 	glDeleteBuffers(1, &field_VBO);
 	glDeleteBuffers(1, &field_EBO);
@@ -73,7 +73,7 @@ void Render::free_all()
 
 void Render::key_processing(Snake* snake)
 {
-	// Управление камерой
+	// РЈРїСЂР°РІР»РµРЅРёРµ РєР°РјРµСЂРѕР№
 	GLfloat camera_step = 0.5f * delta_time;
 	if (control.keys[GLFW_KEY_W])
 	{
@@ -100,7 +100,7 @@ void Render::key_processing(Snake* snake)
 		control.camera_pos -= camera_step * control.camera_up;
 	}
 
-	// Управление змейкой
+	// РЈРїСЂР°РІР»РµРЅРёРµ Р·РјРµР№РєРѕР№
 	if (control.keys[GLFW_KEY_UP] && snake->get_direction() != 'd')
 	{
 		snake->set_direction('u');
@@ -121,13 +121,13 @@ void Render::key_processing(Snake* snake)
 
 void Render::draw(Snake* snake)
 {
-	// Заливка фона
+	// Р—Р°Р»РёРІРєР° С„РѕРЅР°
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	// Очищаем буфер цвета и Z-буфер
+	// РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂ С†РІРµС‚Р° Рё Z-Р±СѓС„РµСЂ
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-	// Забиваем текстурами
+	// Р—Р°Р±РёРІР°РµРј С‚РµРєСЃС‚СѓСЂР°РјРё
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, field.texture);
 	glActiveTexture(GL_TEXTURE1);
@@ -136,7 +136,7 @@ void Render::draw(Snake* snake)
 	glBindTexture(GL_TEXTURE_2D, food.texture);
 
 
-	// Матрицы камеры
+	// РњР°С‚СЂРёС†С‹ РєР°РјРµСЂС‹
 	glm::mat4 view(1.0f);
 	view = glm::lookAt(control.camera_pos,
 		control.camera_pos + control.camera_front,
@@ -144,7 +144,7 @@ void Render::draw(Snake* snake)
 	glm::mat4 projection(1.0f);
 	projection = glm::perspective(glm::radians(50.0f), (GLfloat)window_width / (GLfloat)window_height, 0.1f, 300.0f);
 
-	// Отрисовка поля
+	// РћС‚СЂРёСЃРѕРІРєР° РїРѕР»СЏ
 	shader.use();
 
 	glm::mat4 model(1.0f);
@@ -162,7 +162,7 @@ void Render::draw(Snake* snake)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
-	// Отрисовка змейки
+	// РћС‚СЂРёСЃРѕРІРєР° Р·РјРµР№РєРё
 	snake->game_cycle();
 
 	glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
@@ -171,12 +171,12 @@ void Render::draw(Snake* snake)
 	glBindVertexArray(body_VAO);
 	glUniform1i(glGetUniformLocation(shader.program, "our_texture"), 1);
 
-	// Голова
+	// Р“РѕР»РѕРІР°
 	GLint s_model_loc = glGetUniformLocation(shader.program, "model");
 	glUniformMatrix4fv(s_model_loc, 1, GL_FALSE, glm::value_ptr(snake->get_head_model()));
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-	// Сегменты тела
+	// РЎРµРіРјРµРЅС‚С‹ С‚РµР»Р°
 	for (int i = 0; i < snake->get_body_pos_size(); ++i)
 	{
 		glm::mat4 body_model(1.0f);
@@ -186,12 +186,12 @@ void Render::draw(Snake* snake)
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	}
 
-	// Еда
+	// Р•РґР°
 	glUniform1i(glGetUniformLocation(shader.program, "our_texture"), 2);
 	glUniformMatrix4fv(s_model_loc, 1, GL_FALSE, glm::value_ptr(snake->get_food_model()));
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-	// Отвязываем все
+	// РћС‚РІСЏР·С‹РІР°РµРј РІСЃРµ
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);
 
@@ -203,30 +203,37 @@ int Render::init(void (*cursor_callback)(GLFWwindow*, double, double),
 				 void (*key_callback)(GLFWwindow*, int, int, int, int),
 				 Snake* snake)
 {
-	// Определение рабочей директории
+	// РћРїСЂРµРґРµР»РµРЅРёРµ СЂР°Р±РѕС‡РµР№ РґРёСЂРµРєС‚РѕСЂРёРё
 	std::filesystem::path cwd = std::filesystem::current_path();
 	working_directory = cwd.string();
-	working_directory.resize(working_directory.length() - 6);
-	// Работа с путями
+	std::string last_name;
+	std::size_t found;
+	while (last_name != "build")
+	{
+		found = working_directory.find_last_of("/\\");
+		last_name = working_directory.substr(found + 1);
+		working_directory = working_directory.substr(0, found);
+	}
+	// Р Р°Р±РѕС‚Р° СЃ РїСѓС‚СЏРјРё
 	work_on_path(&vertex_shader_path, "\\src\\shader\\vertex_shader.vs");
 	work_on_path(&fragment_shader_path, "\\src\\shader\\fragment_shader.fs");
 	work_on_path(&field_texture_path, "\\src\\texture\\img\\field.jpg");
 	work_on_path(&body_texture_path, "\\src\\texture\\img\\snake.jpg");
 	work_on_path(&food_texture_path, "\\src\\texture\\img\\food.jpg");
 
-	// Временные переменные, необходимые для получения размеров окна
+	// Р’СЂРµРјРµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ, РЅРµРѕР±С…РѕРґРёРјС‹Рµ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ СЂР°Р·РјРµСЂРѕРІ РѕРєРЅР°
 	int temp_window_width, temp_window_height;
 
-	// Инициализация и настройка GLFW
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Рё РЅР°СЃС‚СЂРѕР№РєР° GLFW
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	// Инициализируем объект окна
+	// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РѕР±СЉРµРєС‚ РѕРєРЅР°
 	window = glfwCreateWindow(window_width, window_height, "AI SNAKE", nullptr, nullptr);
-	// Проверка инициализации окна
+	// РџСЂРѕРІРµСЂРєР° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РѕРєРЅР°
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -234,34 +241,34 @@ int Render::init(void (*cursor_callback)(GLFWwindow*, double, double),
 		return -1;
 	}
 
-	// Задаем созданное окно текущим
+	// Р—Р°РґР°РµРј СЃРѕР·РґР°РЅРЅРѕРµ РѕРєРЅРѕ С‚РµРєСѓС‰РёРј
 	glfwMakeContextCurrent(window);
 
-	// Задаем в glfw фиксацию курсора, но без его отрисовки
+	// Р—Р°РґР°РµРј РІ glfw С„РёРєСЃР°С†РёСЋ РєСѓСЂСЃРѕСЂР°, РЅРѕ Р±РµР· РµРіРѕ РѕС‚СЂРёСЃРѕРІРєРё
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// Передаем нашу рукописную callback-функцию для мыши
+	// РџРµСЂРµРґР°РµРј РЅР°С€Сѓ СЂСѓРєРѕРїРёСЃРЅСѓСЋ callback-С„СѓРЅРєС†РёСЋ РґР»СЏ РјС‹С€Рё
 	glfwSetCursorPosCallback(window, cursor_callback);
-	// Передаем нашу callback функцию для клавиатуры
+	// РџРµСЂРµРґР°РµРј РЅР°С€Сѓ callback С„СѓРЅРєС†РёСЋ РґР»СЏ РєР»Р°РІРёР°С‚СѓСЂС‹
 	glfwSetKeyCallback(window, key_callback);
 
-	// Загружаем GLAD (OpenGL) и проверяем загрузку
+	// Р—Р°РіСЂСѓР¶Р°РµРј GLAD (OpenGL) Рё РїСЂРѕРІРµСЂСЏРµРј Р·Р°РіСЂСѓР·РєСѓ
 	if (!gladLoadGL())
 	{
 		std::cout << "Can't load GLAD" << std::endl;
 		return -1;
 	}
 
-	// Передаем OpenGL размер window
+	// РџРµСЂРµРґР°РµРј OpenGL СЂР°Р·РјРµСЂ window
 	glfwGetFramebufferSize(window, &temp_window_width, &temp_window_height);
 	glViewport(0, 0, temp_window_width, temp_window_height);
 
 
-	// Создаем шейдерные программы
+	// РЎРѕР·РґР°РµРј С€РµР№РґРµСЂРЅС‹Рµ РїСЂРѕРіСЂР°РјРјС‹
 	shader = Shader(vertex_shader_path, fragment_shader_path);
 
 
-	// Вершины
+	// Р’РµСЂС€РёРЅС‹
 	GLfloat field_vertices[] =
 	{
 		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f,
@@ -271,38 +278,38 @@ int Render::init(void (*cursor_callback)(GLFWwindow*, double, double),
 	};
 	GLfloat snake_vertices[] =
 	{
-		// Верхняя стенка
+		// Р’РµСЂС…РЅСЏСЏ СЃС‚РµРЅРєР°
 		-0.5f, 0.5f, 0.5f,		0.0f, 0.0f,
 		-0.5f, 0.5f, -0.5f,		0.0f, 1.0f,
 		0.5f,  0.5f, 0.5f,		1.0f, 0.0f,
 		0.5f,  0.5f, -0.5f,		1.0f, 1.0f,
-		// Нижняя стенка
+		// РќРёР¶РЅСЏСЏ СЃС‚РµРЅРєР°
 		-0.5f, -0.5f, 0.5f,		0.0f, 0.0f,
 		-0.5f, -0.5f, -0.5f,	0.0f, 1.0f,
 		0.5f,  -0.5f, 0.5f,		1.0f, 0.0f,
 		0.5f,  -0.5f, -0.5f,	1.0f, 1.0f,
-		// Левая стенка
+		// Р›РµРІР°СЏ СЃС‚РµРЅРєР°
 		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,
 		-0.5f, 0.5f,  -0.5f,	0.0f, 1.0f,
 		-0.5f, -0.5f, 0.5f,		1.0f, 0.0f,
 		-0.5f, 0.5f,  0.5f,		1.0f, 1.0f,
-		// Правая стенка
+		// РџСЂР°РІР°СЏ СЃС‚РµРЅРєР°
 		0.5f, -0.5f, 0.5f,		0.0f, 0.0f,
 		0.5f, 0.5f,  0.5f,		0.0f, 1.0f,
 		0.5f, -0.5f, -0.5f,		1.0f, 0.0f,
 		0.5f, 0.5f,  -0.5f,		1.0f, 1.0f,
-		// Задняя стенка
+		// Р—Р°РґРЅСЏСЏ СЃС‚РµРЅРєР°
 		0.5f,  -0.5f, -0.5f,	0.0f, 0.0f,
 		0.5f,  0.5f,  -0.5f,	0.0f, 1.0f,
 		-0.5f, -0.5f, -0.5f,	1.0f, 0.0f,
 		-0.5f, 0.5f,  -0.5f,	1.0f, 1.0f,
-		// Передняя стенка
+		// РџРµСЂРµРґРЅСЏСЏ СЃС‚РµРЅРєР°
 		-0.5f, -0.5f, 0.5f,		0.0f, 0.0f,
 		-0.5f, 0.5f, 0.5f,		0.0f, 1.0f,
 		0.5f,  -0.5f, 0.5f,		1.0f, 0.0f,
 		0.5f,  0.5f, 0.5f,		1.0f, 1.0f
 	};
-	// Индексы
+	// РРЅРґРµРєСЃС‹
 	GLuint field_indices[] =
 	{
 		0, 1, 2,
@@ -324,44 +331,44 @@ int Render::init(void (*cursor_callback)(GLFWwindow*, double, double),
 		21, 22, 23
 	};
 
-	// Трава
+	// РўСЂР°РІР°
 	init_object(&field_VAO, &field_VBO, &field_EBO,
 				field_vertices, field_indices,
 				sizeof(field_vertices), sizeof(field_indices));
-	// Змея
+	// Р—РјРµСЏ
 	init_object(&body_VAO, &body_VBO, &body_EBO,
 				snake_vertices, snake_indices,
 				sizeof(snake_vertices), sizeof(snake_indices));
 
 
-	// Флаг для корректной загрузки изображений через stb_image
+	// Р¤Р»Р°Рі РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ Р·Р°РіСЂСѓР·РєРё РёР·РѕР±СЂР°Р¶РµРЅРёР№ С‡РµСЂРµР· stb_image
 	stbi_set_flip_vertically_on_load(true);
-	// Создаем объекты текстур
+	// РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚С‹ С‚РµРєСЃС‚СѓСЂ
 	field = Texture(field_texture_path);
 	body = Texture(body_texture_path);
 	food = Texture(food_texture_path);
 
 
-	// Режим отрисовки
+	// Р РµР¶РёРј РѕС‚СЂРёСЃРѕРІРєРё
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	// Проверка Z-буфера для корректного наложения объектов друг на друга
+	// РџСЂРѕРІРµСЂРєР° Z-Р±СѓС„РµСЂР° РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕРіРѕ РЅР°Р»РѕР¶РµРЅРёСЏ РѕР±СЉРµРєС‚РѕРІ РґСЂСѓРі РЅР° РґСЂСѓРіР°
 	glEnable(GL_DEPTH_TEST);
 
 
-	// Основной цикл отрисовки
+	// РћСЃРЅРѕРІРЅРѕР№ С†РёРєР» РѕС‚СЂРёСЃРѕРІРєРё
 	while (!glfwWindowShouldClose(window))
 	{
-		// Определяем delta_time
+		// РћРїСЂРµРґРµР»СЏРµРј delta_time
 		current_frame = glfwGetTime();
 		delta_time = current_frame - last_frame;
 		last_frame = current_frame;
 
-		// Обрабатываем события
+		// РћР±СЂР°Р±Р°С‚С‹РІР°РµРј СЃРѕР±С‹С‚РёСЏ
 		glfwPollEvents();
-		// Движение камеры
+		// Р”РІРёР¶РµРЅРёРµ РєР°РјРµСЂС‹
 		key_processing(snake);
 
-		// Отрисовка
+		// РћС‚СЂРёСЃРѕРІРєР°
 		current_time = glfwGetTime();
 		if (current_time - last_time >= 1.0 / frames_per_sec)
 		{
@@ -370,9 +377,9 @@ int Render::init(void (*cursor_callback)(GLFWwindow*, double, double),
 		}
 	}
 
-	// Очищаем память
+	// РћС‡РёС‰Р°РµРј РїР°РјСЏС‚СЊ
 	free_all();
-	// После завершения цикла, закрывая окно
+	// РџРѕСЃР»Рµ Р·Р°РІРµСЂС€РµРЅРёСЏ С†РёРєР»Р°, Р·Р°РєСЂС‹РІР°СЏ РѕРєРЅРѕ
 	glfwTerminate();
 }
 
