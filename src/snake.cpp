@@ -17,7 +17,7 @@ Snake::Snake()
 	srand(time(NULL));
 
 	direction = 'r';
-	size = 64;
+	size = 16;
 	step = 1.0f / size;
 
 	default_pos.x = step / 2;
